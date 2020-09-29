@@ -4,9 +4,12 @@ from airtable import Airtable
 import os
 
 
-AT = Airtable(os.environ.get('AIRTABLE_MOVIESTABLE_BASE_ID'),
+AIRTABLE_API_KEY="keyckpoNqH3GrHCQj"
+AIRTABLE_MOVIESTABLE_BASE_ID="appimON1uNNrvbbmf"
+
+AT = Airtable(os.environ.get('AIRTABLE_MOVIESTABLE_BASE_ID',AIRTABLE_MOVIESTABLE_BASE_ID),
               'Movies',
-              api_key=os.environ.get('AIRTABLE_API_KEY'))
+              api_key=os.environ.get('AIRTABLE_API_KEY', AIRTABLE_API_KEY))
 
 # Create your views here.
 def home_page(request):
@@ -17,4 +20,42 @@ def home_page(request):
 
 
 def create(request):
+    if request.method == "POST":
+        data = {
+            'Name': request.POST.get('name'),
+            'Pictures': [{'url': request.POST.get('url') or 'https://lh3.googleusercontent.com/proxy/8hHzspVXAj4hEeFdPATD9NWHqnGOVMt2X4TrHCiO3Jxe_p8A6htZCBV1MPLsahZBCJID_BzaT9odfrKKYx1mB1A9H44wFCKPq3xC7SwO0NDLGkRKP7mPhVAHzq18TDCExw'}],
+            'Rating': int(request.POST.get('rating')),
+            'Notes': request.POST.get('notes'),
+        }
+        try:
+            response = AT.insert(data)
+            messages.success(request, 'New movie Added:{}'.format(response['fields'].get('Name')))
+        except Exception as e:
+            messages.warning(request, 'Got an error when trying to create new movie: {}'.format(e))
+    return redirect('/')
+
+
+def edit(request, movie_id):
+    if request.method =="POST":
+        data={
+            'Name': request.POST.get('name'),
+            'Pictures': [{'url':request.POST.get('url') or 'https://lh3.googleusercontent.com/proxy/8hHzspVXAj4hEeFdPATD9NWHqnGOVMt2X4TrHCiO3Jxe_p8A6htZCBV1MPLsahZBCJID_BzaT9odfrKKYx1mB1A9H44wFCKPq3xC7SwO0NDLGkRKP7mPhVAHzq18TDCExw'}],
+            'Rating': int(request.POST.get('rating')),
+            'Notes': request.POST.get('notes'),
+        }
+        try:
+            response = AT.update(movie_id, data)
+            messages.success(request, 'Updated movie:{}'.format(response['fields'].get('Name')))
+        except Exception as e:
+            messages.warning(request,'Got an error when trying to update a mvie: {}'.format(e))
+        
+    return redirect('/')
+
+def delete(request, movie_id):
+    try:
+        movie_name = AT.get(movie_id)['fields'].get('name')
+        response = AT.delete(movie_id)
+        messages.warning(request,'Deleted movie: {}'.format(movie_name))
+    except Exception as e:
+        messages.warning(request,'Got an error when trying to delete a movie:{}'.format(e))
     return redirect('/')

@@ -1,0 +1,11 @@
+airtable-python-wrapper==0.8.0
+asgiref==3.2.10
+certifi==2018.1.18
+chardet==3.0.4
+Django==3.1.1
+idna==2.6
+pytz==2017.3
+requests==2.18.4
+six==1.11.0
+sqlparse==0.3.1
+urllib3==1.22
